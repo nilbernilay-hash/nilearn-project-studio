@@ -16,14 +16,13 @@ function App() {
 			console.log('Loading board from Supabase...')
 
 			const { data, error } = await supabase
-				.from('"page 1"')
+				.from('whiteboards')
 				.select('data')
 				.eq('id', BOARD_ID)
 				.maybeSingle()
 
 			console.log('Load result:', { data, error })
 
-			// TypeScript safety check: Ensure editor exists before accessing store
 			if (data?.data && editor) {
 				loadSnapshot(editor.store, data.data)
 			}
@@ -38,14 +37,11 @@ function App() {
 
 		const saveBoard = async () => {
 			console.log('Attempting to save...')
-
-			// TypeScript safety check: Ensure editor exists before getting snapshot
-			if (!editor) return
 			
 			const snapshot = getSnapshot(editor.store)
 
 			const { error } = await supabase
-				.from('"page 1"')
+				.from('whiteboards')
 				.upsert({
 					id: BOARD_ID,
 					data: snapshot,
