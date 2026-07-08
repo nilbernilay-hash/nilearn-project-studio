@@ -23,7 +23,8 @@ function App() {
 
 			console.log('Load result:', { data, error })
 
-			if (data?.data) {
+			// TypeScript safety check: Ensure editor exists before accessing store
+			if (data?.data && editor) {
 				loadSnapshot(editor.store, data.data)
 			}
 		}
@@ -38,6 +39,9 @@ function App() {
 		const saveBoard = async () => {
 			console.log('Attempting to save...')
 
+			// TypeScript safety check: Ensure editor exists before getting snapshot
+			if (!editor) return
+			
 			const snapshot = getSnapshot(editor.store)
 
 			const { error } = await supabase
