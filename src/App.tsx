@@ -13,11 +13,15 @@ function App() {
 		if (!editor) return
 
 		async function loadBoard() {
-			const { data } = await supabase
+			console.log('Loading board from Supabase...')
+
+			const { data, error } = await supabase
 				.from('boards')
 				.select('data')
 				.eq('id', BOARD_ID)
 				.maybeSingle()
+
+			console.log('Load result:', { data, error })
 
 			if (data?.data) {
 				loadSnapshot(editor.store, data.data)
@@ -33,21 +37,23 @@ function App() {
 		if (!editor || !loaded) return
 
 		const saveBoard = async () => {
+			console.log('Saving board to Supabase...')
+
 			const snapshot = getSnapshot(editor.store)
 
-			await supabase.from('boards').upsert({
+			const { error } = await supabase.from('boards').upsert({
 				id: BOARD_ID,
 				data: snapshot,
 				updated_at: new Date().toISOString(),
 			})
+
+			console.log('Save result:', error)
 		}
 
 		const interval = setInterval(saveBoard, 5000)
-		window.addEventListener('beforeunload', saveBoard)
 
 		return () => {
 			clearInterval(interval)
-			window.removeEventListener('beforeunload', saveBoard)
 		}
 	}, [editor, loaded])
 
