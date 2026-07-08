@@ -15,8 +15,9 @@ function App() {
 		async function loadBoard() {
 			console.log('Loading board from Supabase...')
 
+			// UPDATED: Using '"page 1"' with double quotes inside
 			const { data, error } = await supabase
-				.from('boards')
+				.from('"page 1"')
 				.select('data')
 				.eq('id', BOARD_ID)
 				.maybeSingle()
@@ -41,7 +42,8 @@ function App() {
 
 			const snapshot = getSnapshot(editor.store)
 
-			const { error } = await supabase.from('boards').upsert({
+			// UPDATED: Using '"page 1"' with double quotes inside
+			const { error } = await supabase.from('"page 1"').upsert({
 				id: BOARD_ID,
 				data: snapshot,
 				updated_at: new Date().toISOString(),
