@@ -7,15 +7,14 @@ const BOARD_ID = 'main'
 
 function App() {
 	const [editor, setEditor] = useState<Editor | null>(null)
-	const [loaded, setLoaded] = useState(false)
 
+	// Load Board once on startup
 	useEffect(() => {
 		if (!editor) return
 
 		async function loadBoard() {
 			console.log('Loading board from Supabase...')
 
-			// UPDATED: Using '"page 1"' with double quotes inside
 			const { data, error } = await supabase
 				.from('"page 1"')
 				.select('data')
@@ -27,37 +26,38 @@ function App() {
 			if (data?.data) {
 				loadSnapshot(editor.store, data.data)
 			}
-
-			setLoaded(true)
 		}
 
 		loadBoard()
 	}, [editor])
 
+	// Force Save every 5 seconds
 	useEffect(() => {
-		if (!editor || !loaded) return
+		if (!editor) return
 
 		const saveBoard = async () => {
-			console.log('Saving board to Supabase...')
+			console.log('Attempting to save...')
 
 			const snapshot = getSnapshot(editor.store)
 
-			// UPDATED: Using '"page 1"' with double quotes inside
-			const { error } = await supabase.from('"page 1"').upsert({
-				id: BOARD_ID,
-				data: snapshot,
-				updated_at: new Date().toISOString(),
-			})
+			const { error } = await supabase
+				.from('"page 1"')
+				.upsert({
+					id: BOARD_ID,
+					data: snapshot,
+					updated_at: new Date().toISOString(),
+				})
 
-			console.log('Save result:', error)
+			if (error) {
+				console.error('SAVE ERROR:', error)
+			} else {
+				console.log('SAVE SUCCESS')
+			}
 		}
 
 		const interval = setInterval(saveBoard, 5000)
-
-		return () => {
-			clearInterval(interval)
-		}
-	}, [editor, loaded])
+		return () => clearInterval(interval)
+	}, [editor])
 
 	return (
 		<div style={{ position: 'fixed', inset: 0 }}>
